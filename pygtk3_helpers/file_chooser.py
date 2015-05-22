@@ -7,6 +7,7 @@ class FileChooserView(SlaveView):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.action = kwargs.pop('action', Gtk.FileChooserAction.OPEN)
+        self.confirm_overwrite = kwargs.pop('confirm_overwrite', True)
         file_buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                         Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
         folder_buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, 'Select',
@@ -52,8 +53,9 @@ class FileChooserView(SlaveView):
             parent = parent.get_parent()
 
     def on_file_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(self.title,
-                                       self.parent, self.action, self.buttons)
+        dialog = Gtk.FileChooserDialog(self.title, self.parent, self.action,
+                                       self.buttons)
+        dialog.set_do_overwrite_confirmation(self.confirm_overwrite)
 
         self.add_filters(dialog)
 
@@ -98,10 +100,14 @@ class FileChooserView(SlaveView):
 
     @property
     def selected_path(self):
-        return self._selected_path
+        if self.label:
+            return self.label.get_text()
+        else:
+            return self._selected_path
 
     @selected_path.setter
     def selected_path(self, value):
-        self._selected_path = value
         if self.label:
             self.label.set_text(value)
+        else:
+            self._selected_path = value
